@@ -14,6 +14,7 @@ namespace RazorPagesMovie.Pages
 
         public void OnGet()
         {
+            Console.WriteLine("It got the privacy thing");
         }
     }
 
