@@ -8,7 +8,10 @@
 <h1>Index</h1>
 
 <p>
-    <a asp-page="Create">Create New</a>
+    
+    <a asp-page="./Create" class="btn btn-primary">
+        <i class="fas fa-trash-alt"></i> Add New Movie
+    </a>
 </p>
 
 <form>
@@ -21,8 +24,90 @@
     </p>
 </form>
 
-<table class="table">
+<table class="table" id="movieTable">
     <thead>
+        <style>
+            th {
+                position: sticky;
+                top: 0;
+                background-color: #f2f2f2;
+                z-index: 2;
+            }
+        </style>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const table = document.getElementById("movieTable");
+                const headers = table.querySelectorAll("thead th");
+                const sortingState = {}; // Object to store sorting state for each column
+
+                headers.forEach(header => {
+                    header.addEventListener("click", () => {
+                        const index = Array.from(headers).indexOf(header);
+                        sortTable(table, index, sortingState);
+                        updateHeaderArrows(headers, sortingState, index);
+                    });
+                });
+            });
+
+            function sortTable(table, column, sortingState) {
+                const rows = Array.from(table.tBodies[0].rows);
+                const sortOrder = sortingState[column] || 1; // Default to ascending order
+
+                rows.sort((a, b) => {
+                    const aValue = getColumnValue(a, column);
+                    const bValue = getColumnValue(b, column);
+
+                    return sortOrder * aValue.localeCompare(bValue, undefined, { numeric: true });
+                });
+
+                // Update sorting state for the current column
+                sortingState[column] = -sortOrder;
+
+                // Clear the existing rows
+                while (table.tBodies[0].firstChild) {
+                    table.tBodies[0].removeChild(table.tBodies[0].firstChild);
+                }
+
+                // Append the sorted rows
+                rows.forEach(row => table.tBodies[0].appendChild(row));
+            }
+
+            function getColumnValue(row, column) {
+                const cellValue = row.cells[column].innerText.trim();
+
+                // Adjust the value for date columns
+                if (isDateColumn(column)) {
+                    return cellValue.slice(-4);
+                } else {
+                    return cellValue;
+                }
+            }
+
+            function isDateColumn(column) {
+                const headers = document.getElementById("movieTable").querySelectorAll("thead th");
+                return headers[column].innerText.trim().toLowerCase().includes("date");
+            }
+
+            function updateHeaderArrows(headers, sortingState, clickedIndex) {
+                headers.forEach((header, index) => {
+                    const arrow = header.querySelector('.sort-arrow');
+                    if (arrow) {
+                        arrow.remove(); // Remove existing arrow
+                    }
+
+                    if (index === clickedIndex) {
+                        const sortOrder = sortingState[index];
+                        if (sortOrder) {
+                            const arrowIcon = sortOrder === 1 ? '▲' : '▼';
+                            const arrowElement = document.createElement('span');
+                            arrowElement.className = 'sort-arrow';
+                            arrowElement.textContent = arrowIcon;
+                            header.appendChild(arrowElement);
+                        }
+                    }
+                });
+            }
+        </script>
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.Movie[0].Title)
@@ -43,7 +128,7 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.Movie) {
+        @foreach (var item in Model.Movie) {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Title)
@@ -72,6 +157,6 @@
                 </a>
             </td>
         </tr>
-}
+        }
     </tbody>
 </table>
