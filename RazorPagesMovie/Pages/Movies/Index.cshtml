@@ -7,156 +7,209 @@
 
 <h1>Movies</h1>
 
-<p>
-    
-    <a asp-page="./Create" class="btn btn-primary">
-        <i class="fas fa-trash-alt"></i> Add New Movie
-    </a>
-</p>
+<div class="container mt-4">
+    <form class="form-inline mb-4" id="filterForm" method="get" asp-page="./Index">
+        <div class="row">
+            <div class="col-md mb-2">
+                <label for="MovieGenre" class="mr-2">Genre:</label>
+                <select class="form-control form-control-sm" asp-for="MovieGenre" asp-items="Model.Genres" onchange="submitForm()">
+                    <option value="">All Genres</option>
+                </select>
+            </div>
+            <div class="col-md mb-2">
+                <label for="MovieRating" class="mr-2">Rating:</label>
+                <select class="form-control form-control-sm" asp-for="MovieRating" asp-items="Model.Ratings" onchange="submitForm()">
+                    <option value="">All Ratings</option>
+                </select>
+            </div>
+            <div class="col-md mb-2">
+                <label for="MinPrice" class="mr-2">Min Price:</label>
+                <input type="number" class="form-control form-control-sm" asp-for="MinPrice" placeholder="Min Price" pattern="\d+(\.\d{2})?"  oninput="validateDecimalInput(this)">
+            </div>
+            <div class="col-md mb-2">
+                <label for="MaxPrice" class="mr-2">Max Price:</label>
+                <input type="number" class="form-control form-control-sm" asp-for="MaxPrice" placeholder="Max Price" pattern="\d+(\.\d{2})?"  oninput="validateDecimalInput(this)">
+            </div>
+            <div class="col-md mb-2">
+                <label for="MinReleaseDate" class="mr-2">Min Release Date:</label>
+                <input type="date" class="form-control form-control-sm" asp-for="MinReleaseDate">
+            </div>
+            <div class="col-md mb-2">
+                <label for="MaxReleaseDate" class="mr-2">Max Release Date:</label>
+                <input type="date" class="form-control form-control-sm" asp-for="MaxReleaseDate">
+            </div>
+        </div>
+        <div>
+            <div class="col-md mb-2">
+                <label for="SearchString" class="mr-2" style="font-size: 18px;">Search for Movie:</label>
+                <input type="text" class="form-control form-control-lg rounded mb-2" asp-for="SearchString">
+                <div class="text-lg-left">
+                    <button type="submit" class="btn btn-primary btn-lg">Search for Movie</button>
+                     | 
+                    <a asp-page="./Create" class="btn btn-primary btn-lg">
+                        <i class="fas fa-trash-alt"></i> Add New Movie
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
 
-<form>
-    <p>
-        <select asp-for="MovieGenre" asp-items="Model.Genres" >
-            <option value="">All</option>
-        </select>
-        Title: <input type="text" asp-for="SearchString" />
-        <input type="submit" value="Filter" />
-    </p>
-</form>
-
-<table class="table" id="movieTable">
-    <thead>
-        <style>
-            th {
-                position: sticky;
-                top: 0;
-                background-color: #f2f2f2;
-                z-index: 2;
-            }
-        </style>
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                const table = document.getElementById("movieTable");
-                const headers = table.querySelectorAll("thead th");
-                const sortingState = {}; // Object to store sorting state for each column
-
-                headers.forEach(header => {
-                    header.addEventListener("click", () => {
-                        const index = Array.from(headers).indexOf(header);
-                        sortTable(table, index, sortingState);
-                        updateHeaderArrows(headers, sortingState, index);
-                    });
-                });
-            });
-
-            function sortTable(table, column, sortingState) {
-                const rows = Array.from(table.tBodies[0].rows);
-                const sortOrder = sortingState[column] || 1; // Default to ascending order
-
-                rows.sort((a, b) => {
-                    const aValue = getColumnValue(a, column);
-                    const bValue = getColumnValue(b, column);
-
-                    return sortOrder * aValue.localeCompare(bValue, undefined, { numeric: true });
-                });
-
-                // Update sorting state for the current column
-                sortingState[column] = -sortOrder;
-
-                // Clear the existing rows
-                while (table.tBodies[0].firstChild) {
-                    table.tBodies[0].removeChild(table.tBodies[0].firstChild);
+    <table class="table" id="movieTable">
+        <thead>
+            <style>
+                th {
+                    position: sticky;
+                    top: 0;
+                    background-color: #f2f2f2;
+                    z-index: 2;
                 }
-
-                // Append the sorted rows
-                rows.forEach(row => table.tBodies[0].appendChild(row));
+            </style>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Movie[0].Title)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Movie[0].ReleaseDate)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Movie[0].Genre)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Movie[0].Price)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Movie[0].Rating)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Movie)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Title)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ReleaseDate)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Genre)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Price)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Rating)
+                    </td>
+                    <td>
+                        <a asp-page="./Edit" asp-route-id="@item.Id" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Edit
+                        </a> |
+                        <a asp-page="./Details" asp-route-id="@item.Id" class="btn btn-primary">
+                            <i class="fas fa-info-circle"></i> Details
+                        </a> |
+                        <a asp-page="./Delete" asp-route-id="@item.Id" class="btn btn-danger">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </a>
+                    </td>
+                </tr>
             }
+        </tbody>
+    </table>
+</div>
 
-            function getColumnValue(row, column) {
-                const cellValue = row.cells[column].innerText.trim();
-
-                // Adjust the value for date columns
-                if (isDateColumn(column)) {
-                    return cellValue.slice(-4);
-                } else {
-                    return cellValue;
-                }
-            }
-
-            function isDateColumn(column) {
-                const headers = document.getElementById("movieTable").querySelectorAll("thead th");
-                return headers[column].innerText.trim().toLowerCase().includes("date");
-            }
-
-            function updateHeaderArrows(headers, sortingState, clickedIndex) {
-                headers.forEach((header, index) => {
-                    const arrow = header.querySelector('.sort-arrow');
-                    if (arrow) {
-                        arrow.remove(); // Remove existing arrow
-                    }
-
-                    if (index === clickedIndex) {
-                        const sortOrder = sortingState[index];
-                        if (sortOrder) {
-                            const arrowIcon = sortOrder === 1 ? '▲' : '▼';
-                            const arrowElement = document.createElement('span');
-                            arrowElement.className = 'sort-arrow';
-                            arrowElement.textContent = arrowIcon;
-                            header.appendChild(arrowElement);
-                        }
-                    }
-                });
-            }
-        </script>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Movie[0].Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Movie[0].ReleaseDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Movie[0].Genre)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Movie[0].Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Movie[0].Rating)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.Movie) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ReleaseDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Genre)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Rating)
-            </td>
-            <td>
-                <a asp-page="./Edit" asp-route-id="@item.Id" class="btn btn-primary">
-                    <i class="fas fa-edit"></i> Edit
-                </a> |
-                <a asp-page="./Details" asp-route-id="@item.Id" class="btn btn-primary">
-                    <i class="fas fa-info-circle"></i> Details
-                </a> |
-                <a asp-page="./Delete" asp-route-id="@item.Id" class="btn btn-danger">
-                    <i class="fas fa-trash-alt"></i> Delete
-                </a>
-            </td>
-        </tr>
+<script>
+    function validateDecimalInput(input) {
+        // Allow only one decimal point
+        const decimalCount = (input.value.match(/\./g) || []).length;
+        if (decimalCount > 1) {
+            input.value = input.value.slice(0, input.value.lastIndexOf('.'));
         }
-    </tbody>
-</table>
+
+        // Allow only two digits after the decimal point
+        const parts = input.value.split('.');
+        if (parts[1] && parts[1].length > 2) {
+            parts[1] = parts[1].slice(0, 2);
+            input.value = parts.join('.');
+        }
+
+       
+    }
+
+    function submitForm() {
+        document.getElementById("filterForm").submit();
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+        const table = document.getElementById("movieTable");
+        const headers = table.querySelectorAll("thead th");
+        const sortingState = {}; // Object to store sorting state for each column
+
+        headers.forEach(header => {
+            header.addEventListener("click", () => {
+                const index = Array.from(headers).indexOf(header);
+                sortTable(table, index, sortingState);
+                updateHeaderArrows(headers, sortingState, index);
+            });
+        });
+    });
+
+    function sortTable(table, column, sortingState) {
+        const rows = Array.from(table.tBodies[0].rows);
+        const sortOrder = sortingState[column] || 1; // Default to ascending order
+
+        rows.sort((a, b) => {
+            const aValue = getColumnValue(a, column);
+            const bValue = getColumnValue(b, column);
+
+            return sortOrder * aValue.localeCompare(bValue, undefined, { numeric: true });
+        });
+
+        // Update sorting state for the current column
+        sortingState[column] = -sortOrder;
+
+        // Clear the existing rows
+        while (table.tBodies[0].firstChild) {
+            table.tBodies[0].removeChild(table.tBodies[0].firstChild);
+        }
+
+        // Append the sorted rows
+        rows.forEach(row => table.tBodies[0].appendChild(row));
+    }
+
+    function getColumnValue(row, column) {
+        const cellValue = row.cells[column].innerText.trim();
+
+        // Adjust the value for date columns
+        if (isDateColumn(column)) {
+            return cellValue.slice(-4);
+        } else {
+            return cellValue;
+        }
+    }
+
+    function isDateColumn(column) {
+        const headers = document.getElementById("movieTable").querySelectorAll("thead th");
+        return headers[column].innerText.trim().toLowerCase().includes("date");
+    }
+
+    function updateHeaderArrows(headers, sortingState, clickedIndex) {
+        headers.forEach((header, index) => {
+            const arrow = header.querySelector('.sort-arrow');
+            if (arrow) {
+                arrow.remove(); // Remove existing arrow
+            }
+
+            if (index === clickedIndex) {
+                const sortOrder = sortingState[index];
+                if (sortOrder) {
+                    const arrowIcon = sortOrder === 1 ? '▲' : '▼';
+                    const arrowElement = document.createElement('span');
+                    arrowElement.className = 'sort-arrow';
+                    arrowElement.textContent = arrowIcon;
+                    header.appendChild(arrowElement);
+                }
+            }
+        });
+    }
+</script>
